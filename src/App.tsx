@@ -1,11 +1,12 @@
-import React from 'react';
+import classnames from 'classnames';
+import React, { useState } from 'react';
 import './App.css';
 
 const App: React.FC = () => {
+  const [recording, setRecording] = useState(false);
+
   return (
-    <div className="App">
-      test
-    </div>
+    <div className={classnames('App', recording && 'recording')} />
   );
 }
 
