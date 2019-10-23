@@ -2,21 +2,30 @@
   "name": "cappi",
   "version": "0.1.0",
   "private": true,
+  "main": "src/main.js",
+  "homepage": "./",
   "dependencies": {
     "@types/jest": "24.0.19",
     "@types/node": "12.11.5",
     "@types/react": "16.9.9",
     "@types/react-dom": "16.9.2",
+    "electron-is-dev": "^1.1.0",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
     "react-scripts": "3.2.0",
     "typescript": "3.6.4"
   },
+  "devDependencies": {
+    "electron": "^7.0.0",
+    "electron-reload": "^1.5.0",
+    "nodemon": "^1.19.4"
+  },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "BROWSER=none react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "electron": "NODE_ENV=dev nodemon --exec 'electron .'"
   },
   "eslintConfig": {
     "extends": "react-app"
