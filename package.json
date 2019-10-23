@@ -12,6 +12,9 @@
     "react-scripts": "3.2.0",
     "typescript": "3.6.4"
   },
+  "devDependencies": {
+    "electron": "^7.0.0"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
