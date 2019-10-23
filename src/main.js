@@ -9,7 +9,12 @@ const path = require('path')
 let mainWindow
 
 function createWindow() {
-  mainWindow = new BrowserWindow({ width: 800, height: 600 })
+  mainWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    frame: false,
+    transparent: true,
+  })
 
   mainWindow.loadURL(
     isDev
