@@ -7,8 +7,3 @@ body {
   -moz-osx-font-smoothing: grayscale;
   -webkit-app-region: drag;
 }
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
