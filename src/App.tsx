@@ -1,5 +1,6 @@
 import classnames from 'classnames';
 import React, { useState, useEffect } from 'react';
+import { record } from './record';
 import './App.css';
 
 const { Menu, getCurrentWebContents } = window.require('electron').remote;
@@ -8,6 +9,8 @@ const App: React.FC = () => {
   const [recording, setRecording] = useState(false);
 
   useEffect(() => {
+    if (recording) record();
+
     Menu.setApplicationMenu(
       Menu.buildFromTemplate([
         {
@@ -33,7 +36,9 @@ const App: React.FC = () => {
   }, [recording])
 
   return (
-    <div className={classnames('App', recording && 'recording')} />
+    <div className={classnames('App', recording && 'recording')}>
+      <video />
+    </div>
   );
 }
 
