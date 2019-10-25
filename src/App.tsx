@@ -36,9 +36,7 @@ const App: React.FC = () => {
   }, [recording])
 
   return (
-    <div className={classnames('App', recording && 'recording')}>
-      <video />
-    </div>
+    <div className={classnames('App', recording && 'recording')} />
   );
 }
 

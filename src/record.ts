@@ -1,4 +1,5 @@
 const { desktopCapturer } = window.require('electron');
+const fs = window.require('fs');
 
 export const record = async () => {
   const sources = await desktopCapturer.getSources({ types: ['screen'] });
@@ -23,13 +24,30 @@ export const record = async () => {
       },
     });
 
-    // TODO: ファイルに出力
-    const video = document.querySelector('video');
-    if (video) {
-      video.srcObject = stream;
-      video.onloadedmetadata = (e) => video.play();
-    }
+    const chunks: Blob[] = [];
+    const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+    mediaRecorder.ondataavailable = e => chunks.push(e.data);
+    mediaRecorder.onstop = async e => {
+      const data = await blobToUint8Array(new Blob(chunks));
+      fs.writeFileSync('/Users/mashabow/Desktop/out.webm', data);
+    };
+
+    // TODO: 録画開始したら start()
+    mediaRecorder.start();
+
+    // TODO: 録画終了したら stop()
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    mediaRecorder.stop();
+
   } catch (e) {
     console.error(e);
   }
 };
+
+const blobToUint8Array = (blob: Blob): Promise<Uint8Array> => new Promise(
+  resolve => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(new Uint8Array(reader.result as ArrayBuffer));
+    reader.readAsArrayBuffer(blob);
+  },
+);
