@@ -1,14 +1,18 @@
 const { desktopCapturer } = window.require('electron');
 const fs = window.require('fs');
 
-export const record = async () => {
-  const sources = await desktopCapturer.getSources({ types: ['screen'] });
-  console.log(sources)
-  // TODO: ウィンドウ位置からスクリーンを自動で選択
-  const source = sources.filter(s => s.name === 'Screen 1').shift();
-  if (!source) return;
+export class Recorder {
+  private mediaRecorder: MediaRecorder | null = null;
 
-  try {
+  public async start() {
+    if (this.mediaRecorder) throw new Error('Recording has already started.');
+
+    const sources = await desktopCapturer.getSources({ types: ['screen'] });
+    console.log(sources)
+    // TODO: ウィンドウ位置からスクリーンを自動で選択
+    const source = sources.filter(s => s.name === 'Screen 1').shift();
+    if (!source) return;
+
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: false,
       video: {
@@ -32,17 +36,16 @@ export const record = async () => {
       fs.writeFileSync('/Users/mashabow/Desktop/out.webm', data);
     };
 
-    // TODO: 録画開始したら start()
     mediaRecorder.start();
-
-    // TODO: 録画終了したら stop()
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    mediaRecorder.stop();
-
-  } catch (e) {
-    console.error(e);
+    this.mediaRecorder = mediaRecorder;
   }
-};
+
+  public stop() {
+    if (!this.mediaRecorder) return;
+    this.mediaRecorder.stop();
+    this.mediaRecorder = null;
+  }
+}
 
 const blobToUint8Array = (blob: Blob): Promise<Uint8Array> => new Promise(
   resolve => {

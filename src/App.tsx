@@ -1,15 +1,16 @@
 import classnames from 'classnames';
-import React, { useState, useEffect } from 'react';
-import { record } from './record';
+import React, { useState, useEffect, useRef } from 'react';
+import { Recorder } from './recorder';
 import './App.css';
 
 const { Menu, getCurrentWebContents } = window.require('electron').remote;
 
 const App: React.FC = () => {
   const [recording, setRecording] = useState(false);
+  const recorder = useRef(new Recorder());
 
   useEffect(() => {
-    if (recording) record();
+    recording ? recorder.current.start() : recorder.current.stop();
 
     Menu.setApplicationMenu(
       Menu.buildFromTemplate([
