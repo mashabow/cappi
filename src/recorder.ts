@@ -1,5 +1,9 @@
-const { desktopCapturer } = window.require('electron');
+import { format } from 'date-fns';
+
+const { desktopCapturer, remote } = window.require('electron');
 const fs = window.require('fs');
+const path = window.require('path');
+const { app } = remote;
 
 export class Recorder {
   private mediaRecorder: MediaRecorder | null = null;
@@ -32,8 +36,12 @@ export class Recorder {
     const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
     mediaRecorder.ondataavailable = e => chunks.push(e.data);
     mediaRecorder.onstop = async e => {
+      const fileName = path.join(
+        app.getPath('desktop'),
+        `recording_${format(new Date(), 'yyyy-MM-dd_HH-mm-ss')}.webm`,
+        );
       const data = await blobToUint8Array(new Blob(chunks));
-      fs.writeFileSync('/Users/mashabow/Desktop/out.webm', data);
+      fs.writeFileSync(fileName, data);
     };
 
     mediaRecorder.start();
