@@ -29,7 +29,13 @@ const App: React.FC = () => {
               label: 'Toggle Developer Tools',
               accelerator: 'Alt+Command+I',
               click: () => getCurrentWebContents().toggleDevTools(),
-            }
+            },
+            {
+              type: 'separator' ,
+            },
+            {
+              role: 'quit',
+            },
           ]
         }
       ])
