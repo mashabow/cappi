@@ -6,11 +6,13 @@
   "homepage": "./",
   "dependencies": {
     "@types/classnames": "^2.2.9",
+    "@types/dom-mediacapture-record": "^1.0.2",
     "@types/jest": "24.0.19",
     "@types/node": "12.11.5",
     "@types/react": "16.9.9",
     "@types/react-dom": "16.9.2",
     "classnames": "^2.2.6",
+    "date-fns": "^2.6.0",
     "electron-is-dev": "^1.1.0",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
