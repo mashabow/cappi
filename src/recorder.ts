@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 const { desktopCapturer, remote } = window.require('electron');
 const fs = window.require('fs');
 const path = window.require('path');
-const { app } = remote;
+const { app, getCurrentWindow } = remote;
 
 export class Recorder {
   readonly screenVideo = document.createElement('video');
@@ -29,17 +29,12 @@ export class Recorder {
         mandatory: {
           chromeMediaSource: 'desktop',
           chromeMediaSourceId: source.id,
-          minWidth: 1280,
-          maxWidth: 1280,
-          minHeight: 720,
-          maxHeight: 720,
           minFrameRate: this.frameRate,
           maxFrameRate: this.frameRate,
         },
       },
     });
-    // TODO: 引数の値をウィンドウ位置から設定する
-    const croppedStream = this.cropStream(screenStream, 100, 100, 300, 200);
+    const croppedStream = this.cropStream(screenStream, getCurrentWindow().getBounds());
 
     const chunks: Blob[] = [];
     const mediaRecorder = new MediaRecorder(croppedStream, { mimeType: 'video/webm' });
@@ -68,20 +63,16 @@ export class Recorder {
   }
 
   // video 要素と canvas 要素を経由して、指定領域のみを切り出す
-  private cropStream(
-    src: MediaStream,
-    x: number, y: number,
-    width: number, height: number,
-  ): MediaStream {
-    this.croppingCanvas.width = width;
-    this.croppingCanvas.height = height;
+  private cropStream(src: MediaStream, bounds: Electron.Rectangle): MediaStream {
+    this.croppingCanvas.width = bounds.width;
+    this.croppingCanvas.height = bounds.height;
     const ctx = this.croppingCanvas.getContext('2d')!;
 
     this.screenVideo.autoplay = true;
     this.screenVideo.srcObject = src;
     this.screenVideo.onplay = () => {
       this.intervalId = window.setInterval(
-        () => ctx.drawImage(this.screenVideo, -x, -y),
+        () => ctx.drawImage(this.screenVideo, -bounds.x, -bounds.y),
         1000 / this.frameRate,
       );
       this.screenVideo.onplay = null;
