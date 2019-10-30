@@ -6,7 +6,12 @@ const path = window.require('path');
 const { app } = remote;
 
 export class Recorder {
+  readonly screenVideo = document.createElement('video');
+  readonly croppingCanvas = document.createElement('canvas');
+  readonly frameRate = 60;
+
   private mediaRecorder: MediaRecorder | null = null;
+  private intervalId: number | null = null;
 
   public async start() {
     if (this.mediaRecorder) throw new Error('Recording has already started.');
@@ -17,7 +22,7 @@ export class Recorder {
     const source = sources.filter(s => s.name === 'Screen 1').shift();
     if (!source) return;
 
-    const stream = await navigator.mediaDevices.getUserMedia({
+    const screenStream = await navigator.mediaDevices.getUserMedia({
       audio: false,
       video: {
         // @ts-ignore
@@ -27,13 +32,17 @@ export class Recorder {
           minWidth: 1280,
           maxWidth: 1280,
           minHeight: 720,
-          maxHeight: 720
+          maxHeight: 720,
+          minFrameRate: this.frameRate,
+          maxFrameRate: this.frameRate,
         },
       },
     });
+    // TODO: 引数の値をウィンドウ位置から設定する
+    const croppedStream = this.cropStream(screenStream, 100, 100, 300, 200);
 
     const chunks: Blob[] = [];
-    const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+    const mediaRecorder = new MediaRecorder(croppedStream, { mimeType: 'video/webm' });
     mediaRecorder.ondataavailable = e => chunks.push(e.data);
     mediaRecorder.onstop = async e => {
       const fileName = path.join(
@@ -52,6 +61,34 @@ export class Recorder {
     if (!this.mediaRecorder) return;
     this.mediaRecorder.stop();
     this.mediaRecorder = null;
+
+    if (!this.intervalId) return;
+    window.clearInterval(this.intervalId);
+    this.intervalId = null;
+  }
+
+  // video 要素と canvas 要素を経由して、指定領域のみを切り出す
+  private cropStream(
+    src: MediaStream,
+    x: number, y: number,
+    width: number, height: number,
+  ): MediaStream {
+    this.croppingCanvas.width = width;
+    this.croppingCanvas.height = height;
+    const ctx = this.croppingCanvas.getContext('2d')!;
+
+    this.screenVideo.autoplay = true;
+    this.screenVideo.srcObject = src;
+    this.screenVideo.onplay = () => {
+      this.intervalId = window.setInterval(
+        () => ctx.drawImage(this.screenVideo, -x, -y),
+        1000 / this.frameRate,
+      );
+      this.screenVideo.onplay = null;
+    };
+
+    // @ts-ignore: 型定義に captureStream() がまだ入っていない様子
+    return this.croppingCanvas.captureStream();
   }
 }
 
