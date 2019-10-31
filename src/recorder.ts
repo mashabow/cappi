@@ -19,7 +19,9 @@ export class Recorder {
     const sources = await desktopCapturer.getSources({ types: ['screen'] });
     console.log(sources)
     // TODO: ウィンドウ位置からスクリーンを自動で選択
-    const source = sources.filter(s => s.name === 'Screen 1').shift();
+    const source = sources.filter(
+      ({ name }) => name === 'Entire Screen' || name === 'Screen 1',
+    ).shift();
     if (!source) return;
 
     const screenStream = await navigator.mediaDevices.getUserMedia({
