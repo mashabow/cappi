@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 const { desktopCapturer, remote } = window.require('electron');
 const fs = window.require('fs');
 const path = window.require('path');
-const { app, getCurrentWindow } = remote;
+const { app, getCurrentWindow, screen } = remote;
 
 export class Recorder {
   readonly screenVideo = document.createElement('video');
@@ -16,13 +16,12 @@ export class Recorder {
   public async start() {
     if (this.mediaRecorder) throw new Error('Recording has already started.');
 
-    const sources = await desktopCapturer.getSources({ types: ['screen'] });
-    console.log(sources)
-    // TODO: ウィンドウ位置からスクリーンを自動で選択
-    const source = sources.filter(
-      ({ name }) => name === 'Entire Screen' || name === 'Screen 1',
-    ).shift();
-    if (!source) return;
+    // ウィンドウ位置に基づいて、録画対象の source を選択
+    const windowBounds = getCurrentWindow().getBounds();
+    const display = screen.getDisplayMatching(windowBounds);
+    const source = (await desktopCapturer.getSources({ types: ['screen'] }))
+      .find(({ display_id }) => Number(display_id) === display.id);
+    if (!source) throw new Error('Failed to find display.');
 
     const screenStream = await navigator.mediaDevices.getUserMedia({
       audio: false,
@@ -36,7 +35,14 @@ export class Recorder {
         },
       },
     });
-    const croppedStream = this.cropStream(screenStream, getCurrentWindow().getBounds());
+    // windowBounds 内の領域だけを切り出す
+    // windowBounds, display.bounds ともに、メインディスプレイ左上が原点になっているので、
+    // 座標を差し引く必要がある
+    const croppedStream = this.cropStream(screenStream, {
+      ...windowBounds,
+      x: windowBounds.x - display.bounds.x,
+      y: windowBounds.y - display.bounds.y,
+    });
 
     const chunks: Blob[] = [];
     const mediaRecorder = new MediaRecorder(croppedStream, { mimeType: 'video/webm' });
