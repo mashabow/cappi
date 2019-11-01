@@ -31,20 +31,18 @@ const App: React.FC = () => {
               click: () => getCurrentWebContents().toggleDevTools(),
             },
             {
-              type: 'separator' ,
+              type: 'separator',
             },
             {
               role: 'quit',
             },
-          ]
-        }
-      ])
-    )
-  }, [recording])
+          ],
+        },
+      ]),
+    );
+  }, [recording]);
 
-  return (
-    <div className={classnames('App', recording && 'recording')} />
-  );
-}
+  return <div className={classnames('App', recording && 'recording')} />;
+};
 
 export default App;
