@@ -22,17 +22,19 @@
   "devDependencies": {
     "electron": "^7.0.0",
     "electron-reload": "^1.5.0",
-    "nodemon": "^1.19.4"
+    "eslint-config-prettier": "^6.5.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "nodemon": "^1.19.4",
+    "prettier": "^1.18.2"
   },
   "scripts": {
     "start": "BROWSER=none react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "electron": "NODE_ENV=dev nodemon --exec 'electron .'"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
+    "electron": "NODE_ENV=dev nodemon --exec 'electron .'",
+    "lint": "eslint --format codeFrame src/**.{js,ts,tsx}",
+    "eslint-check": "eslint --print-config src/main.js | eslint-config-prettier-check"
   },
   "browserslist": {
     "production": [

@@ -19,8 +19,9 @@ export class Recorder {
     // ウィンドウ位置に基づいて、録画対象の source を選択
     const windowBounds = getCurrentWindow().getBounds();
     const display = screen.getDisplayMatching(windowBounds);
-    const source = (await desktopCapturer.getSources({ types: ['screen'] }))
-      .find(({ display_id }) => Number(display_id) === display.id);
+    const source = (await desktopCapturer.getSources({
+      types: ['screen'],
+    })).find(({ display_id }) => Number(display_id) === display.id);
     if (!source) throw new Error('Failed to find display.');
 
     const screenStream = await navigator.mediaDevices.getUserMedia({
@@ -45,13 +46,15 @@ export class Recorder {
     });
 
     const chunks: Blob[] = [];
-    const mediaRecorder = new MediaRecorder(croppedStream, { mimeType: 'video/webm' });
+    const mediaRecorder = new MediaRecorder(croppedStream, {
+      mimeType: 'video/webm',
+    });
     mediaRecorder.ondataavailable = e => chunks.push(e.data);
     mediaRecorder.onstop = async e => {
       const fileName = path.join(
         app.getPath('desktop'),
         `recording_${format(new Date(), 'yyyy-MM-dd_HH-mm-ss')}.webm`,
-        );
+      );
       const data = await blobToUint8Array(new Blob(chunks));
       fs.writeFileSync(fileName, data);
     };
@@ -71,7 +74,10 @@ export class Recorder {
   }
 
   // video 要素と canvas 要素を経由して、指定領域のみを切り出す
-  private cropStream(src: MediaStream, bounds: Electron.Rectangle): MediaStream {
+  private cropStream(
+    src: MediaStream,
+    bounds: Electron.Rectangle,
+  ): MediaStream {
     this.croppingCanvas.width = bounds.width;
     this.croppingCanvas.height = bounds.height;
     const ctx = this.croppingCanvas.getContext('2d')!;
@@ -91,10 +97,9 @@ export class Recorder {
   }
 }
 
-const blobToUint8Array = (blob: Blob): Promise<Uint8Array> => new Promise(
-  resolve => {
+const blobToUint8Array = (blob: Blob): Promise<Uint8Array> =>
+  new Promise(resolve => {
     const reader = new FileReader();
     reader.onload = () => resolve(new Uint8Array(reader.result as ArrayBuffer));
     reader.readAsArrayBuffer(blob);
-  },
-);
+  });
