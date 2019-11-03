@@ -8,7 +8,7 @@ const { app, getCurrentWindow, screen } = remote;
 export class Recorder {
   readonly screenVideo = document.createElement('video');
   readonly croppingCanvas = document.createElement('canvas');
-  readonly frameRate = 60;
+  readonly frameRate = 10;
 
   private mediaRecorder: MediaRecorder | null = null;
   private intervalId: number | null = null;
