@@ -48,6 +48,7 @@ export class Recorder {
     const chunks: Blob[] = [];
     const mediaRecorder = new MediaRecorder(croppedStream, {
       mimeType: 'video/webm',
+      bitsPerSecond: 100 * 1000 * 1000,
     });
     mediaRecorder.ondataavailable = e => chunks.push(e.data);
     mediaRecorder.onstop = async e => {
