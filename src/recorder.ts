@@ -83,13 +83,26 @@ export class Recorder {
     this.croppingCanvas.height = bounds.height;
     const ctx = this.croppingCanvas.getContext('2d')!;
 
+    let count = 0;
+    const dirName = path.join(
+      app.getPath('desktop'),
+      `recording_${format(new Date(), 'yyyy-MM-dd_HH-mm-ss')}`,
+    );
+    fs.mkdirSync(dirName);
+
     this.screenVideo.autoplay = true;
     this.screenVideo.srcObject = src;
     this.screenVideo.onplay = () => {
-      this.intervalId = window.setInterval(
-        () => ctx.drawImage(this.screenVideo, -bounds.x, -bounds.y),
-        1000 / this.frameRate,
-      );
+      this.intervalId = window.setInterval(() => {
+        ctx.drawImage(this.screenVideo, -bounds.x, -bounds.y);
+        this.croppingCanvas.toBlob(async blob => {
+          const data = await blobToUint8Array(blob!);
+          const fileName = `${count.toString().padStart(5, '0')}.png`;
+          fs.writeFileSync(path.join(dirName, fileName), data);
+          count++;
+          console.log(fileName);
+        }, 'image/png');
+      }, 1000 / this.frameRate);
       this.screenVideo.onplay = null;
     };
 
