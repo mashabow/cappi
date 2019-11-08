@@ -10,11 +10,19 @@ export class Recorder {
   readonly croppingCanvas = document.createElement('canvas');
   readonly frameRate = 10;
 
+  private tempDir: string | null = null;
   private mediaRecorder: MediaRecorder | null = null;
   private intervalId: number | null = null;
 
   public async start() {
     if (this.mediaRecorder) throw new Error('Recording has already started.');
+
+    this.tempDir = path.join(
+      app.getPath('temp'),
+      `cappi_${format(new Date(), 'yyyy-MM-dd_HH-mm-ss')}`,
+    );
+    fs.mkdirSync(this.tempDir);
+    console.log(this.tempDir);
 
     // ウィンドウ位置に基づいて、録画対象の source を選択
     const windowBounds = getCurrentWindow().getBounds();
@@ -52,10 +60,7 @@ export class Recorder {
     });
     mediaRecorder.ondataavailable = e => chunks.push(e.data);
     mediaRecorder.onstop = async e => {
-      const fileName = path.join(
-        app.getPath('desktop'),
-        `recording_${format(new Date(), 'yyyy-MM-dd_HH-mm-ss')}.webm`,
-      );
+      const fileName = path.join(this.tempDir, 'video.webm');
       const data = await blobToUint8Array(new Blob(chunks));
       fs.writeFileSync(fileName, data);
     };
@@ -84,11 +89,6 @@ export class Recorder {
     const ctx = this.croppingCanvas.getContext('2d')!;
 
     let count = 0;
-    const dirName = path.join(
-      app.getPath('desktop'),
-      `recording_${format(new Date(), 'yyyy-MM-dd_HH-mm-ss')}`,
-    );
-    fs.mkdirSync(dirName);
 
     this.screenVideo.autoplay = true;
     this.screenVideo.srcObject = src;
@@ -98,9 +98,8 @@ export class Recorder {
         this.croppingCanvas.toBlob(async blob => {
           const data = await blobToUint8Array(blob!);
           const fileName = `${count.toString().padStart(5, '0')}.png`;
-          fs.writeFileSync(path.join(dirName, fileName), data);
+          fs.writeFileSync(path.join(this.tempDir, fileName), data);
           count++;
-          console.log(fileName);
         }, 'image/png');
       }, 1000 / this.frameRate);
       this.screenVideo.onplay = null;
