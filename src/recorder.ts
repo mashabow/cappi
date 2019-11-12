@@ -3,7 +3,11 @@ import { format } from 'date-fns';
 const { desktopCapturer, remote } = window.require('electron');
 const fs = window.require('fs');
 const path = window.require('path');
+const util = window.require('util');
+const childProcess = window.require('child_process');
 const { app, getCurrentWindow, screen } = remote;
+
+const exec = util.promisify(childProcess.exec);
 
 export class Recorder {
   readonly screenVideo = document.createElement('video');
@@ -13,9 +17,11 @@ export class Recorder {
   private tempDir: string | null = null;
   private mediaRecorder: MediaRecorder | null = null;
   private intervalId: number | null = null;
+  private recorded: boolean = false;
 
   public async start() {
     if (this.mediaRecorder) throw new Error('Recording has already started.');
+    this.recorded = false;
 
     this.tempDir = path.join(
       app.getPath('temp'),
@@ -63,13 +69,14 @@ export class Recorder {
       const fileName = path.join(this.tempDir, 'video.webm');
       const data = await blobToUint8Array(new Blob(chunks));
       fs.writeFileSync(fileName, data);
+      this.recorded = true;
     };
 
     mediaRecorder.start();
     this.mediaRecorder = mediaRecorder;
   }
 
-  public stop() {
+  public async stop() {
     if (!this.mediaRecorder) return;
     this.mediaRecorder.stop();
     this.mediaRecorder = null;
@@ -77,6 +84,23 @@ export class Recorder {
     if (!this.intervalId) return;
     window.clearInterval(this.intervalId);
     this.intervalId = null;
+
+    await this.generateWebP();
+  }
+
+  private async generateWebP() {
+    if (!this.recorded) throw new Error('Recording has not finished.');
+    const duration = Math.round(1000 / this.frameRate); // ms / frame
+    const input = path.join(this.tempDir, '*.png');
+    const output = path.join(
+      app.getPath('desktop'),
+      `${path.basename(this.tempDir)}.webp`,
+    );
+    try {
+      await exec(`img2webp -lossy -d ${duration} ${input} -o ${output}`);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   // video 要素と canvas 要素を経由して、指定領域のみを切り出す
