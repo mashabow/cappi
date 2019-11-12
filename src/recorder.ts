@@ -10,17 +10,13 @@ const { app, getCurrentWindow, screen } = remote;
 const exec = util.promisify(childProcess.exec);
 
 export class Recorder {
-  readonly screenVideo = document.createElement('video');
-  readonly croppingCanvas = document.createElement('canvas');
   readonly frameRate = 10;
 
   private tempDir: string | null = null;
   private intervalId: number | null = null;
-  private recorded: boolean = false;
 
   public async start() {
     if (this.intervalId) throw new Error('Recording has already started.');
-    this.recorded = false;
 
     this.tempDir = path.join(
       app.getPath('temp'),
@@ -63,15 +59,47 @@ export class Recorder {
   }
 
   public async stop() {
-    if (!this.intervalId) throw new Error('Recording has not started.');
-    window.clearInterval(this.intervalId);
-    this.intervalId = null;
-
+    this.stopSavingFrames();
     await this.generateWebP();
   }
 
-  private async generateWebP() {
-    if (!this.recorded) throw new Error('Recording has not finished.');
+  // フレームごとの保存を開始する
+  // video 要素と canvas 要素を経由して、指定領域のみを切り出す
+  private startSavingFrames(
+    src: MediaStream,
+    bounds: Electron.Rectangle,
+  ): void {
+    const video = document.createElement('video');
+    video.autoplay = true;
+    video.srcObject = src;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = bounds.width;
+    canvas.height = bounds.height;
+
+    let count = 0;
+
+    video.onplay = () => {
+      this.intervalId = window.setInterval(() => {
+        canvas.getContext('2d')!.drawImage(video, -bounds.x, -bounds.y);
+        canvas.toBlob(async blob => {
+          const data = await blobToUint8Array(blob!);
+          const fileName = `${count.toString().padStart(5, '0')}.png`;
+          fs.writeFileSync(path.join(this.tempDir, fileName), data);
+          count++;
+        }, 'image/png');
+      }, 1000 / this.frameRate);
+      video.onplay = null;
+    };
+  }
+
+  private stopSavingFrames(): void {
+    if (!this.intervalId) throw new Error('Recording has not started.');
+    window.clearInterval(this.intervalId);
+    this.intervalId = null;
+  }
+
+  private async generateWebP(): Promise<void> {
     const duration = Math.round(1000 / this.frameRate); // ms / frame
     const input = path.join(this.tempDir, '*.png');
     const output = path.join(
@@ -83,34 +111,6 @@ export class Recorder {
     } catch (e) {
       console.error(e);
     }
-  }
-
-  // フレームごとの保存を開始する
-  // video 要素と canvas 要素を経由して、指定領域のみを切り出す
-  private startSavingFrames(
-    src: MediaStream,
-    bounds: Electron.Rectangle,
-  ): void {
-    this.croppingCanvas.width = bounds.width;
-    this.croppingCanvas.height = bounds.height;
-    const ctx = this.croppingCanvas.getContext('2d')!;
-
-    let count = 0;
-
-    this.screenVideo.autoplay = true;
-    this.screenVideo.srcObject = src;
-    this.screenVideo.onplay = () => {
-      this.intervalId = window.setInterval(() => {
-        ctx.drawImage(this.screenVideo, -bounds.x, -bounds.y);
-        this.croppingCanvas.toBlob(async blob => {
-          const data = await blobToUint8Array(blob!);
-          const fileName = `${count.toString().padStart(5, '0')}.png`;
-          fs.writeFileSync(path.join(this.tempDir, fileName), data);
-          count++;
-        }, 'image/png');
-      }, 1000 / this.frameRate);
-      this.screenVideo.onplay = null;
-    };
   }
 }
 
