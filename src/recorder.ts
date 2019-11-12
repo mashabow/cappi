@@ -15,12 +15,11 @@ export class Recorder {
   readonly frameRate = 10;
 
   private tempDir: string | null = null;
-  private mediaRecorder: MediaRecorder | null = null;
   private intervalId: number | null = null;
   private recorded: boolean = false;
 
   public async start() {
-    if (this.mediaRecorder) throw new Error('Recording has already started.');
+    if (this.intervalId) throw new Error('Recording has already started.');
     this.recorded = false;
 
     this.tempDir = path.join(
@@ -50,38 +49,21 @@ export class Recorder {
         },
       },
     });
-    // windowBounds 内の領域だけを切り出す
-    // windowBounds, display.bounds ともに、メインディスプレイ左上が原点になっているので、
-    // 座標を差し引く必要がある
-    const croppedStream = this.cropStream(screenStream, {
-      ...windowBounds,
-      x: windowBounds.x - display.bounds.x,
-      y: windowBounds.y - display.bounds.y,
-    });
 
-    const chunks: Blob[] = [];
-    const mediaRecorder = new MediaRecorder(croppedStream, {
-      mimeType: 'video/webm',
-      bitsPerSecond: 100 * 1000 * 1000,
-    });
-    mediaRecorder.ondataavailable = e => chunks.push(e.data);
-    mediaRecorder.onstop = async e => {
-      const fileName = path.join(this.tempDir, 'video.webm');
-      const data = await blobToUint8Array(new Blob(chunks));
-      fs.writeFileSync(fileName, data);
-      this.recorded = true;
-    };
-
-    mediaRecorder.start();
-    this.mediaRecorder = mediaRecorder;
+    this.startSavingFrames(
+      screenStream,
+      // windowBounds, display.bounds ともに、メインディスプレイ左上が原点になっているので、
+      // 座標を差し引く必要がある
+      {
+        ...windowBounds,
+        x: windowBounds.x - display.bounds.x,
+        y: windowBounds.y - display.bounds.y,
+      },
+    );
   }
 
   public async stop() {
-    if (!this.mediaRecorder) return;
-    this.mediaRecorder.stop();
-    this.mediaRecorder = null;
-
-    if (!this.intervalId) return;
+    if (!this.intervalId) throw new Error('Recording has not started.');
     window.clearInterval(this.intervalId);
     this.intervalId = null;
 
@@ -103,11 +85,12 @@ export class Recorder {
     }
   }
 
+  // フレームごとの保存を開始する
   // video 要素と canvas 要素を経由して、指定領域のみを切り出す
-  private cropStream(
+  private startSavingFrames(
     src: MediaStream,
     bounds: Electron.Rectangle,
-  ): MediaStream {
+  ): void {
     this.croppingCanvas.width = bounds.width;
     this.croppingCanvas.height = bounds.height;
     const ctx = this.croppingCanvas.getContext('2d')!;
@@ -128,9 +111,6 @@ export class Recorder {
       }, 1000 / this.frameRate);
       this.screenVideo.onplay = null;
     };
-
-    // @ts-ignore: 型定義に captureStream() がまだ入っていない様子
-    return this.croppingCanvas.captureStream();
   }
 }
 
