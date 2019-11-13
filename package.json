@@ -13,19 +13,17 @@
     "@types/react-dom": "16.9.2",
     "classnames": "^2.2.6",
     "date-fns": "^2.6.0",
-    "electron-is-dev": "^1.1.0",
-    "react": "^16.11.0",
-    "react-dom": "^16.11.0",
-    "react-scripts": "3.2.0",
-    "typescript": "3.6.4"
-  },
-  "devDependencies": {
     "electron": "^7.0.0",
+    "electron-is-dev": "^1.1.0",
     "electron-reload": "^1.5.0",
     "eslint-config-prettier": "^6.5.0",
     "eslint-plugin-prettier": "^3.1.1",
     "nodemon": "^1.19.4",
-    "prettier": "^1.18.2"
+    "prettier": "^1.18.2",
+    "react": "^16.11.0",
+    "react-dom": "^16.11.0",
+    "react-scripts": "3.2.0",
+    "typescript": "3.6.4"
   },
   "scripts": {
     "start": "BROWSER=none react-scripts start",
