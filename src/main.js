@@ -10,14 +10,23 @@ let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    resizable: false,
+    movable: false,
+    alwaysOnTop: true,
     frame: false,
+    hasShadow: false,
     transparent: true,
     webPreferences: {
       nodeIntegration: true,
     },
   });
+
+  mainWindow.setVisibleOnAllWorkspaces(true, {
+    visibleOnFullScreen: true,
+  });
+
+  // TODO: ディスプレイが切り替わったらそのたびにフルスクリーン化
+  mainWindow.setSimpleFullScreen(true);
 
   mainWindow.loadURL(
     isDev
