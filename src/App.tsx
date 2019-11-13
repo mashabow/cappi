@@ -20,12 +20,18 @@ const App: React.FC = () => {
     updateMenu(recording, setRecording);
   }, [recording]);
 
-  const [crop, setCrop] = useState<ReactCrop.Crop>({
-    x: 300,
-    y: 300,
-    width: 300,
-    height: 200,
-  });
+  const [crop, setCrop] = useState<ReactCrop.Crop>({});
+  // renderComponent を使っていると crop の初期値が反映されない（crop が表示されない）ので、
+  // マウントされた後に初期値を setCrop して表示させる
+  useEffect(() => {
+    setCrop({
+      // TODO: 前回録画時の値を使う
+      x: 300,
+      y: 300,
+      width: 300,
+      height: 200,
+    });
+  }, []);
 
   return (
     <div>
