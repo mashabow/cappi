@@ -1,5 +1,7 @@
-import classnames from 'classnames';
 import React, { useState, useEffect, useRef } from 'react';
+import ReactCrop from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
+
 import { Recorder } from './recorder';
 import { updateMenu } from './menu';
 
@@ -18,7 +20,24 @@ const App: React.FC = () => {
     updateMenu(recording, setRecording);
   }, [recording]);
 
-  return <div className={classnames('App', recording && 'recording')} />;
+  const [crop, setCrop] = useState<ReactCrop.Crop>({
+    x: 300,
+    y: 300,
+    width: 300,
+    height: 200,
+  });
+
+  return (
+    <div>
+      <ReactCrop
+        src="" // renderComponent を表示するので不要だが、型の上では必須
+        renderComponent={<div className="CropTarget" />}
+        crop={crop}
+        onChange={setCrop}
+        keepSelection
+      />
+    </div>
+  );
 };
 
 export default App;
