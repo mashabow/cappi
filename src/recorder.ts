@@ -15,7 +15,7 @@ export class Recorder {
   private tempDir: string | null = null;
   private intervalId: number | null = null;
 
-  public async start() {
+  public async start(): Promise<void> {
     if (this.intervalId) throw new Error('Recording has already started.');
 
     this.tempDir = path.join(
@@ -58,7 +58,7 @@ export class Recorder {
     );
   }
 
-  public async stop() {
+  public async stop(): Promise<void> {
     this.stopSavingFrames();
     await this.generateWebP();
   }

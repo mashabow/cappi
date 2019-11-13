@@ -9,4 +9,14 @@ module.exports = {
       trailingComma: 'all',
     }],
   },
+  overrides: [
+    {
+      files: ['*.ts', '*.tsx'],
+      rules: {
+        '@typescript-eslint/explicit-function-return-type': ['warn', {
+          allowExpressions: true,
+        }],
+      },
+    },
+  ],
 };
