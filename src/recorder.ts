@@ -3,18 +3,27 @@ import { format } from 'date-fns';
 const { desktopCapturer, remote } = window.require('electron');
 const fs = window.require('fs');
 const path = window.require('path');
+const util = window.require('util');
+const childProcess = window.require('child_process');
 const { app, getCurrentWindow, screen } = remote;
 
-export class Recorder {
-  readonly screenVideo = document.createElement('video');
-  readonly croppingCanvas = document.createElement('canvas');
-  readonly frameRate = 60;
+const exec = util.promisify(childProcess.exec);
 
-  private mediaRecorder: MediaRecorder | null = null;
+export class Recorder {
+  readonly frameRate = 10;
+
+  private tempDir: string | null = null;
   private intervalId: number | null = null;
 
   public async start() {
-    if (this.mediaRecorder) throw new Error('Recording has already started.');
+    if (this.intervalId) throw new Error('Recording has already started.');
+
+    this.tempDir = path.join(
+      app.getPath('temp'),
+      `cappi_${format(new Date(), 'yyyy-MM-dd_HH-mm-ss')}`,
+    );
+    fs.mkdirSync(this.tempDir);
+    console.log(this.tempDir);
 
     // ウィンドウ位置に基づいて、録画対象の source を選択
     const windowBounds = getCurrentWindow().getBounds();
@@ -36,64 +45,72 @@ export class Recorder {
         },
       },
     });
-    // windowBounds 内の領域だけを切り出す
-    // windowBounds, display.bounds ともに、メインディスプレイ左上が原点になっているので、
-    // 座標を差し引く必要がある
-    const croppedStream = this.cropStream(screenStream, {
-      ...windowBounds,
-      x: windowBounds.x - display.bounds.x,
-      y: windowBounds.y - display.bounds.y,
-    });
 
-    const chunks: Blob[] = [];
-    const mediaRecorder = new MediaRecorder(croppedStream, {
-      mimeType: 'video/webm',
-    });
-    mediaRecorder.ondataavailable = e => chunks.push(e.data);
-    mediaRecorder.onstop = async e => {
-      const fileName = path.join(
-        app.getPath('desktop'),
-        `recording_${format(new Date(), 'yyyy-MM-dd_HH-mm-ss')}.webm`,
-      );
-      const data = await blobToUint8Array(new Blob(chunks));
-      fs.writeFileSync(fileName, data);
-    };
-
-    mediaRecorder.start();
-    this.mediaRecorder = mediaRecorder;
+    this.startSavingFrames(
+      screenStream,
+      // windowBounds, display.bounds ともに、メインディスプレイ左上が原点になっているので、
+      // 座標を差し引く必要がある
+      {
+        ...windowBounds,
+        x: windowBounds.x - display.bounds.x,
+        y: windowBounds.y - display.bounds.y,
+      },
+    );
   }
 
-  public stop() {
-    if (!this.mediaRecorder) return;
-    this.mediaRecorder.stop();
-    this.mediaRecorder = null;
+  public async stop() {
+    this.stopSavingFrames();
+    await this.generateWebP();
+  }
 
-    if (!this.intervalId) return;
+  // フレームごとの保存を開始する
+  // video 要素と canvas 要素を経由して、指定領域のみを切り出す
+  private startSavingFrames(
+    src: MediaStream,
+    bounds: Electron.Rectangle,
+  ): void {
+    const video = document.createElement('video');
+    video.autoplay = true;
+    video.srcObject = src;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = bounds.width;
+    canvas.height = bounds.height;
+
+    let count = 0;
+
+    video.onplay = () => {
+      this.intervalId = window.setInterval(() => {
+        canvas.getContext('2d')!.drawImage(video, -bounds.x, -bounds.y);
+        canvas.toBlob(async blob => {
+          const data = await blobToUint8Array(blob!);
+          const fileName = `${count.toString().padStart(5, '0')}.png`;
+          fs.writeFileSync(path.join(this.tempDir, fileName), data);
+          count++;
+        }, 'image/png');
+      }, 1000 / this.frameRate);
+      video.onplay = null;
+    };
+  }
+
+  private stopSavingFrames(): void {
+    if (!this.intervalId) throw new Error('Recording has not started.');
     window.clearInterval(this.intervalId);
     this.intervalId = null;
   }
 
-  // video 要素と canvas 要素を経由して、指定領域のみを切り出す
-  private cropStream(
-    src: MediaStream,
-    bounds: Electron.Rectangle,
-  ): MediaStream {
-    this.croppingCanvas.width = bounds.width;
-    this.croppingCanvas.height = bounds.height;
-    const ctx = this.croppingCanvas.getContext('2d')!;
-
-    this.screenVideo.autoplay = true;
-    this.screenVideo.srcObject = src;
-    this.screenVideo.onplay = () => {
-      this.intervalId = window.setInterval(
-        () => ctx.drawImage(this.screenVideo, -bounds.x, -bounds.y),
-        1000 / this.frameRate,
-      );
-      this.screenVideo.onplay = null;
-    };
-
-    // @ts-ignore: 型定義に captureStream() がまだ入っていない様子
-    return this.croppingCanvas.captureStream();
+  private async generateWebP(): Promise<void> {
+    const duration = Math.round(1000 / this.frameRate); // ms / frame
+    const input = path.join(this.tempDir, '*.png');
+    const output = path.join(
+      app.getPath('desktop'),
+      `${path.basename(this.tempDir)}.webp`,
+    );
+    try {
+      await exec(`img2webp -lossy -d ${duration} ${input} -o ${output}`);
+    } catch (e) {
+      console.error(e);
+    }
   }
 }
 

@@ -7,10 +7,14 @@ const { Menu, getCurrentWebContents } = window.require('electron').remote;
 
 const App: React.FC = () => {
   const [recording, setRecording] = useState(false);
-  const recorder = useRef(new Recorder());
+  const recorder = useRef<Recorder | null>(null);
 
   useEffect(() => {
-    recording ? recorder.current.start() : recorder.current.stop();
+    if (recorder.current) {
+      recording ? recorder.current.start() : recorder.current.stop();
+    } else {
+      recorder.current = new Recorder();
+    }
 
     Menu.setApplicationMenu(
       Menu.buildFromTemplate([
