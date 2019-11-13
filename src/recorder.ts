@@ -85,7 +85,7 @@ export class Recorder {
         canvas.toBlob(async blob => {
           const data = await blobToUint8Array(blob!);
           const fileName = `${count.toString().padStart(5, '0')}.png`;
-          fs.writeFileSync(path.join(this.tempDir, fileName), data);
+          fs.writeFileSync(path.join(this.tempDir!, fileName), data);
           count++;
         }, 'image/png');
       }, 1000 / this.frameRate);
@@ -101,10 +101,10 @@ export class Recorder {
 
   private async generateWebP(): Promise<void> {
     const duration = Math.round(1000 / this.frameRate); // ms / frame
-    const input = path.join(this.tempDir, '*.png');
+    const input = path.join(this.tempDir!, '*.png');
     const output = path.join(
       app.getPath('desktop'),
-      `${path.basename(this.tempDir)}.webp`,
+      `${path.basename(this.tempDir!)}.webp`,
     );
     try {
       await exec(`img2webp -lossy -d ${duration} ${input} -o ${output}`);
