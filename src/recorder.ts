@@ -5,7 +5,7 @@ const fs = window.require('fs');
 const path = window.require('path');
 const util = window.require('util');
 const childProcess = window.require('child_process');
-const { app, getCurrentWindow, screen } = remote;
+const { app } = remote;
 
 const exec = util.promisify(childProcess.exec);
 
@@ -15,7 +15,7 @@ export class Recorder {
   private tempDir: string | null = null;
   private intervalId: number | null = null;
 
-  public async start(): Promise<void> {
+  public async start(bounds: Electron.Rectangle): Promise<void> {
     if (this.intervalId) throw new Error('Recording has already started.');
 
     this.tempDir = path.join(
@@ -25,12 +25,10 @@ export class Recorder {
     fs.mkdirSync(this.tempDir);
     console.log(this.tempDir);
 
-    // ウィンドウ位置に基づいて、録画対象の source を選択
-    const windowBounds = getCurrentWindow().getBounds();
-    const display = screen.getDisplayMatching(windowBounds);
+    // TODO: start() メソッドの引数を経由して対象スクリーンを指定可能にする
     const source = (await desktopCapturer.getSources({
       types: ['screen'],
-    })).find(({ display_id }) => Number(display_id) === display.id);
+    })).find(({ name }) => name === 'Entire Screen' || name === 'Screen 1');
     if (!source) throw new Error('Failed to find display.');
 
     const screenStream = await navigator.mediaDevices.getUserMedia({
@@ -46,16 +44,7 @@ export class Recorder {
       },
     });
 
-    this.startSavingFrames(
-      screenStream,
-      // windowBounds, display.bounds ともに、メインディスプレイ左上が原点になっているので、
-      // 座標を差し引く必要がある
-      {
-        ...windowBounds,
-        x: windowBounds.x - display.bounds.x,
-        y: windowBounds.y - display.bounds.y,
-      },
-    );
+    this.startSavingFrames(screenStream, bounds);
   }
 
   public async stop(): Promise<void> {

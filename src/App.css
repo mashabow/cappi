@@ -1,12 +1,16 @@
-.App {
-  height: 100vh;
-  display: flex;
-  box-sizing: border-box;
-  align-items: center;
-  justify-content: center;
-  border: solid gray 2px;
+/* react-image-crop のスタイルを上書きする */
+.ReactCrop, .ReactCrop > div:first-child {
+  display: block;
+  background-color: transparent;
 }
 
-.App.recording {
-  border-color: magenta;
+/* disabled 時（録画中は）ボーダーを消す */
+.ReactCrop--disabled .ReactCrop__crop-selection {
+  border: none;
+}
+
+/* ウィンドウ全体を crop 可能な領域にする */
+.CropTarget {
+  width: 100vw;
+  height: 100vh;
 }
