@@ -4,6 +4,7 @@ import 'react-image-crop/dist/ReactCrop.css';
 
 import { Recorder } from './recorder';
 import { updateMenu } from './menu';
+import { setTray } from './tray';
 
 import './App.css';
 
@@ -22,7 +23,7 @@ const App: React.FC = () => {
   useEffect(() => {
     if (recorder.current) {
       recording
-        ? recorder.current.start(cropToBounds(crop))
+        ? recorder.current.start(cropToBounds(crop)) && setTray()
         : recorder.current.stop();
     } else {
       recorder.current = new Recorder();
