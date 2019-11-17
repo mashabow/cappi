@@ -4,6 +4,11 @@
   background-color: transparent;
 }
 
+/* disabled 時（録画中は）ボーダーを消す */
+.ReactCrop--disabled .ReactCrop__crop-selection {
+  border: none;
+}
+
 /* ウィンドウ全体を crop 可能な領域にする */
 .CropTarget {
   width: 100vw;

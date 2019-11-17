@@ -51,6 +51,7 @@ const App: React.FC = () => {
         renderComponent={<div className="CropTarget" />}
         crop={crop}
         onChange={setCrop}
+        disabled={recording}
         keepSelection
       />
     </div>
