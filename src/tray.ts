@@ -6,7 +6,11 @@ const { nativeImage, Tray } = remote;
 
 // ビルド前後のパスの差を吸収するのが手間そうなので、
 // パス指定ではなく、dataURL からアイコン画像を生成する
-const icon = nativeImage.createFromDataURL(trayIconTemplate);
+const icon = nativeImage.createEmpty();
+icon.addRepresentation({
+  scaleFactor: 1,
+  dataURL: trayIconTemplate,
+});
 icon.addRepresentation({
   scaleFactor: 2,
   dataURL: trayIconTemplate2x,
