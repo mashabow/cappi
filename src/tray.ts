@@ -2,24 +2,26 @@ import trayIconTemplate from './assets/trayIconTemplate.png';
 import trayIconTemplate2x from './assets/trayIconTemplate@2x.png';
 
 const { remote } = window.require('electron');
-const { Menu, nativeImage, Tray } = remote;
+const { nativeImage, Tray } = remote;
 
-let tray = null;
+// ビルド前後のパスの差を吸収するのが手間そうなので、
+// パス指定ではなく、dataURL からアイコン画像を生成する
+const icon = nativeImage.createFromDataURL(trayIconTemplate);
+icon.addRepresentation({
+  scaleFactor: 2,
+  dataURL: trayIconTemplate2x,
+});
+icon.isMacTemplateImage = true;
 
-export const setTray = (): void => {
-  // ビルド前後のパスの差を吸収するのが手間そうなので、
-  // パス指定ではなく、dataURL からアイコン画像を生成する
-  const icon = nativeImage.createFromDataURL(trayIconTemplate);
-  icon.addRepresentation({
-    scaleFactor: 2,
-    dataURL: trayIconTemplate2x,
-  });
-  icon.isMacTemplateImage = true;
+let tray: Electron.Tray | null = null;
 
+export const addTray = (onClick: () => void): void => {
   tray = new Tray(icon);
-  tray.setToolTip('This is my app.');
-  tray.setTitle('hoge');
+  tray.setToolTip('Click to stop');
+  tray.addListener('click', onClick);
+};
 
-  const contextMenu = Menu.buildFromTemplate([{ role: 'quit' }]);
-  tray.setContextMenu(contextMenu);
+export const removeTray = (): void => {
+  if (!tray) throw new Error('There is no Tray.');
+  tray.destroy();
 };
