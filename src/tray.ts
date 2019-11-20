@@ -14,7 +14,6 @@ export const setTray = (): void => {
     scaleFactor: 2,
     dataURL: trayIconTemplate2x,
   });
-  // @ts-ignore https://github.com/electron/electron/issues/21160
   icon.isMacTemplateImage = true;
 
   tray = new Tray(icon);
