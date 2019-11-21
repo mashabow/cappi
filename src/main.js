@@ -1,14 +1,12 @@
-const electron = require('electron');
+const { app, BrowserWindow } = require('electron');
 const isDev = require('electron-is-dev');
 require('electron-reload');
-const app = electron.app;
-const BrowserWindow = electron.BrowserWindow;
 
 const path = require('path');
 
 let mainWindow;
 
-function createWindow() {
+const createWindow = () => {
   mainWindow = new BrowserWindow({
     resizable: false,
     movable: false,
@@ -39,17 +37,15 @@ function createWindow() {
   });
 }
 
-app.on('ready', createWindow);
+app.whenReady().then(createWindow);
+
+app.on('activate', () => {
+  if (!mainWindow) createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
-  }
-});
-
-app.on('activate', () => {
-  if (mainWindow === null) {
-    createWindow();
   }
 });
 
