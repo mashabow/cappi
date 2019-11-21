@@ -13,16 +13,17 @@ const createWindow = () => {
     alwaysOnTop: true,
     frame: false,
     hasShadow: false,
+    show: false,
     transparent: true,
     webPreferences: {
       nodeIntegration: true,
     },
   });
 
+  mainWindow.once('ready-to-show', mainWindow.show);
   mainWindow.setVisibleOnAllWorkspaces(true, {
     visibleOnFullScreen: true,
   });
-
   // TODO: ディスプレイが切り替わったらそのたびにフルスクリーン化
   mainWindow.setSimpleFullScreen(true);
 
