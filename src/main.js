@@ -1,30 +1,29 @@
-const electron = require('electron');
+const { app, BrowserWindow } = require('electron');
 const isDev = require('electron-is-dev');
 require('electron-reload');
-const app = electron.app;
-const BrowserWindow = electron.BrowserWindow;
 
 const path = require('path');
 
 let mainWindow;
 
-function createWindow() {
+const createWindow = () => {
   mainWindow = new BrowserWindow({
     resizable: false,
     movable: false,
     alwaysOnTop: true,
     frame: false,
     hasShadow: false,
+    show: false,
     transparent: true,
     webPreferences: {
       nodeIntegration: true,
     },
   });
 
+  mainWindow.once('ready-to-show', mainWindow.show);
   mainWindow.setVisibleOnAllWorkspaces(true, {
     visibleOnFullScreen: true,
   });
-
   // TODO: ディスプレイが切り替わったらそのたびにフルスクリーン化
   mainWindow.setSimpleFullScreen(true);
 
@@ -39,7 +38,11 @@ function createWindow() {
   });
 }
 
-app.on('ready', createWindow);
+app.whenReady().then(createWindow);
+
+app.on('activate', () => {
+  if (!mainWindow) createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -47,8 +50,6 @@ app.on('window-all-closed', () => {
   }
 });
 
-app.on('activate', () => {
-  if (mainWindow === null) {
-    createWindow();
-  }
-});
+// Dock やアプリケーションスイッチャーに表示しないようにする
+// これを設定すると、メニューバーにもメニューが表示されなくなる（他のアプリのメニューが表示される）
+app.dock.hide();
