@@ -4,10 +4,10 @@ require('electron-reload');
 
 const path = require('path');
 
-let mainWindow;
+let cropperWindow;
 
-const createWindow = () => {
-  mainWindow = new BrowserWindow({
+const createCropperWindow = () => {
+  cropperWindow = new BrowserWindow({
     resizable: false,
     movable: false,
     alwaysOnTop: true,
@@ -20,28 +20,28 @@ const createWindow = () => {
     },
   });
 
-  mainWindow.once('ready-to-show', mainWindow.show);
-  mainWindow.setVisibleOnAllWorkspaces(true, {
+  cropperWindow.once('ready-to-show', cropperWindow.show);
+  cropperWindow.setVisibleOnAllWorkspaces(true, {
     visibleOnFullScreen: true,
   });
   // TODO: ディスプレイが切り替わったらそのたびにフルスクリーン化
-  mainWindow.setSimpleFullScreen(true);
+  cropperWindow.setSimpleFullScreen(true);
 
-  mainWindow.loadURL(
+  cropperWindow.loadURL(
     isDev
       ? 'http://localhost:3000'
       : `file://${path.join(__dirname, '../build/index.html')}`,
   );
 
-  mainWindow.on('closed', () => {
-    mainWindow = null;
+  cropperWindow.on('closed', () => {
+    cropperWindow = null;
   });
-}
+};
 
-app.whenReady().then(createWindow);
+app.whenReady().then(createCropperWindow);
 
 app.on('activate', () => {
-  if (!mainWindow) createWindow();
+  if (!cropperWindow) createCropperWindow();
 });
 
 app.on('window-all-closed', () => {
