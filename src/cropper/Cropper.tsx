@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
-import { Recorder } from './recorder';
-import { updateMenu } from './menu';
-import { addTray, removeTray } from './tray';
-import { setIgnoreMouseEvents } from './window';
+import { Recorder } from '../recorder';
+import { updateMenu } from '../menu';
+import { addTray, removeTray } from '../tray';
+import { setIgnoreMouseEvents } from '../window';
 
-import './App.css';
+import './Cropper.css';
 
 const cropToBounds = (crop: ReactCrop.Crop): Electron.Rectangle => ({
   x: crop.x || 0,
@@ -16,7 +16,7 @@ const cropToBounds = (crop: ReactCrop.Crop): Electron.Rectangle => ({
   height: crop.height || 0,
 });
 
-const App: React.FC = () => {
+const Cropper: React.FC = () => {
   const [recording, setRecording] = useState(false);
   const recorder = useRef<Recorder | null>(null);
   const [crop, setCrop] = useState<ReactCrop.Crop>({});
@@ -66,4 +66,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default Cropper;
