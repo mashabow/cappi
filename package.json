@@ -33,16 +33,16 @@
   "scripts": {
     "start": "run-p --print-label start:*",
     "start:electron": "NODE_ENV=dev nodemon --watch dist/main.js --exec 'electron .'",
-    "start:main": "parcel watch src/main.js --target electron",
+    "start:main": "parcel watch src/main.ts --target electron",
     "start:renderer": "parcel --port 3000 src/index.html",
     "build": "run-p --print-label build:*",
-    "build:main": "parcel build src/main.js --target electron",
+    "build:main": "parcel build src/main.ts --target electron",
     "build:renderer": "parcel build src/index.html",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "type": "tsc --noEmit --project tsconfig.json",
-    "lint": "eslint --format codeFrame src/**.{js,ts,tsx}",
-    "eslint-check": "eslint --print-config src/main.js | eslint-config-prettier-check"
+    "lint": "eslint --format codeFrame src/**.{ts,tsx}",
+    "eslint-check": "eslint --print-config src/main.ts | eslint-config-prettier-check"
   },
   "browserslist": {
     "production": [
