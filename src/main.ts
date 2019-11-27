@@ -1,12 +1,12 @@
-const { app, BrowserWindow } = require('electron');
-const isDev = require('electron-is-dev');
-require('electron-reload');
+import { app, BrowserWindow } from 'electron';
+import isDev from 'electron-is-dev';
+import 'electron-reload';
 
-const path = require('path');
+import path from 'path';
 
-let mainWindow;
+let mainWindow: BrowserWindow | null;
 
-const createWindow = () => {
+const createWindow = (): void => {
   mainWindow = new BrowserWindow({
     resizable: false,
     movable: false,
@@ -36,7 +36,7 @@ const createWindow = () => {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
-}
+};
 
 app.whenReady().then(createWindow);
 

@@ -2,7 +2,7 @@
   "name": "cappi",
   "version": "0.1.0",
   "private": true,
-  "main": "src/main.js",
+  "main": "dist/main.js",
   "homepage": "./",
   "dependencies": {
     "@types/classnames": "^2.2.9",
@@ -20,6 +20,9 @@
     "eslint-config-prettier": "^6.5.0",
     "eslint-plugin-prettier": "^3.1.1",
     "nodemon": "^1.19.4",
+    "npm-run-all": "^4.1.5",
+    "parcel-bundler": "^1.12.4",
+    "parcel-plugin-url-loader": "^1.3.1",
     "prettier": "^1.18.2",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
@@ -28,13 +31,18 @@
     "typescript": "3.6.4"
   },
   "scripts": {
-    "start": "BROWSER=none react-scripts start",
-    "build": "react-scripts build",
+    "start": "run-p --print-label start:*",
+    "start:electron": "NODE_ENV=dev nodemon --watch dist/main.js --exec 'electron .'",
+    "start:main": "parcel watch src/main.ts --target electron",
+    "start:renderer": "parcel --port 3000 src/index.html",
+    "build": "run-p --print-label build:*",
+    "build:main": "parcel build src/main.ts --target electron",
+    "build:renderer": "parcel build src/index.html",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "electron": "NODE_ENV=dev nodemon --exec 'electron .'",
-    "lint": "eslint --format codeFrame src/**.{js,ts,tsx}",
-    "eslint-check": "eslint --print-config src/main.js | eslint-config-prettier-check"
+    "type": "tsc --noEmit --project tsconfig.json",
+    "lint": "eslint --format codeFrame src/**.{ts,tsx}",
+    "eslint-check": "eslint --print-config src/main.ts | eslint-config-prettier-check"
   },
   "browserslist": {
     "production": [
