@@ -29,8 +29,8 @@
     "typescript": "3.6.4"
   },
   "scripts": {
-    "dev": "parcel --port 3000 public/index.html",
-    "build": "parcel build public/index.html",
+    "start": "parcel --port 3000 src/index.html",
+    "build": "parcel build src/index.html",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "electron": "NODE_ENV=dev nodemon --exec 'electron .'",
