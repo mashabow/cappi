@@ -4,8 +4,8 @@ import trayIconTemplate2x from './assets/trayIconTemplate@2x.png';
 const { remote } = window.require('electron');
 const { nativeImage, Tray } = remote;
 
-// ビルド前後のパスの差を吸収するのが手間そうなので、
-// パス指定ではなく、dataURL からアイコン画像を生成する
+// Parcel でビルドするとファイル名にハッシュがついてしまうので、複数 scaleFactor の自動読み込みができない
+// そこで parcel-plugin-url-loader を使って base64 でインライン化し、そこからアイコン画像を生成する
 const icon = nativeImage.createEmpty();
 icon.addRepresentation({
   scaleFactor: 1,
