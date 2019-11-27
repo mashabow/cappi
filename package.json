@@ -2,7 +2,7 @@
   "name": "cappi",
   "version": "0.1.0",
   "private": true,
-  "main": "src/main.js",
+  "main": "dist/main.js",
   "homepage": "./",
   "dependencies": {
     "@types/classnames": "^2.2.9",
