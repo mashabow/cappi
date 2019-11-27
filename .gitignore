@@ -8,8 +8,9 @@
 # testing
 /coverage
 
-# production
-/build
+# percel
+/dist
+/.cache
 
 # misc
 .DS_Store
