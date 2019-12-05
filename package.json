@@ -16,8 +16,6 @@
     "@typescript-eslint/parser": "^2.10.0",
     "classnames": "^2.2.6",
     "date-fns": "^2.6.0",
-    "electron": "^7.1.2",
-    "electron-builder": "^21.2.0",
     "electron-is-dev": "^1.1.0",
     "electron-reload": "^1.5.0",
     "eslint": "^6.7.2",
@@ -38,6 +36,10 @@
     "react-dom": "^16.11.0",
     "react-image-crop": "^8.4.0",
     "typescript": "3.6.4"
+  },
+  "devDependencies": {
+    "electron": "^7.1.2",
+    "electron-builder": "^21.2.0"
   },
   "scripts": {
     "start": "run-p --print-label start:*",
