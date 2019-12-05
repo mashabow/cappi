@@ -8,9 +8,12 @@
 # testing
 /coverage
 
-# percel
-/dist
+# parcel
+/build
 /.cache
+
+# packaging
+/dist
 
 # misc
 .DS_Store
