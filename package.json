@@ -27,7 +27,6 @@
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
     "react-image-crop": "^8.4.0",
-    "react-scripts": "3.2.0",
     "typescript": "3.6.4"
   },
   "scripts": {
@@ -38,8 +37,6 @@
     "build": "run-p --print-label build:*",
     "build:main": "parcel build src/main.ts --target electron",
     "build:renderer": "parcel build src/index.html",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
     "type": "tsc --noEmit --project tsconfig.json",
     "lint": "eslint --format codeFrame src/**.{ts,tsx}",
     "eslint-check": "eslint --print-config src/main.ts | eslint-config-prettier-check"
